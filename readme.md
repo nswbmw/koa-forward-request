@@ -63,6 +63,27 @@ app.use(route.post('/test', function* () {
 app.listen(3000);
 ```
 
+or
+
+```
+'use strict';
+
+var app = require('koa')();
+var route = require('koa-route');
+var bodyparser = require('koa-bodyparser');
+
+var forward = require('./');
+
+forward(app, {
+  baseUrl: 'http://api.example.com'
+});
+
+app.use(bodyparser());
+app.use(forward.all());
+
+app.listen(3000);
+```
+
 ### Options
 
 see [request](https://github.com/request/request#requestoptions-callback).

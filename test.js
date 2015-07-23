@@ -97,4 +97,104 @@ describe('test remote url', function () {
         done();
       });
   });
+
+  it('should forward to http://expressjs.com', function (done) {
+    var app = koa();
+    forward(app, {
+      baseUrl: 'http://expressjs.com',
+      headers: {},
+      debug: true
+    });
+    app.use(forward.all());
+
+    request(app.callback())
+      .get('/')
+      .expect(200)
+      .end(function (err, res) {
+        if (err) return done(err);
+        
+        if (!res.text.match(/Fast, unopinionated, minimalist web framework/)) {
+          return done('Not match `Fast, unopinionated, minimalist web framework`');
+        }
+        done();
+      });
+  });
+
+  it('should forward to http://expressjs.com//guide/routing.html', function (done) {
+    var app = koa();
+    forward(app, {
+      baseUrl: 'http://expressjs.com',
+      headers: {},
+      debug: true
+    });
+    app.use(forward.all());
+
+    request(app.callback())
+      .get('/guide/routing.html')
+      .expect(200)
+      .end(function (err, res) {
+        if (err) return done(err);
+
+        if (!res.text.match(/Express routing/)) {
+          return done('Not match `Express routing`');
+        }
+        done();
+      });
+  });
+
+  it('should no forward and return body', function (done) {
+    var app = koa();
+    app.use(bodyparser());
+
+    forward(app, {
+      baseUrl: 'http://expressjs.com',
+      headers: {},
+      debug: true
+    });
+    app.use(forward.all());
+    app.use(function* () {
+      this.body = this.request.body;
+    });
+
+    request(app.callback())
+      .post('/guide/routing.html')
+      .send({ name: 'nswbmw' })
+      .expect(200)
+      .end(function (err, res) {
+        if (err) return done(err);
+
+        if (res.body.name !== 'nswbmw') {
+          return done('Not match name');
+        }
+        done();
+      });
+  });
+
+  it('should no forward', function (done) {
+    var app = koa();
+    app.use(bodyparser());
+
+    forward(app, {
+      baseUrl: 'http://expressjs.com',
+      headers: {},
+      debug: true
+    });
+    app.use(function* () {
+      this.body = this.request.body;
+    });
+    app.use(forward.all());
+
+    request(app.callback())
+      .post('/guide/routing.html')
+      .send({ name: 'nswbmw' })
+      .expect(200)
+      .end(function (err, res) {
+        if (err) return done(err);
+
+        if (res.body.name !== 'nswbmw') {
+          return done('Not match name');
+        }
+        done();
+      });
+  });
 });

@@ -5,13 +5,15 @@ var request = require('request');
 var merge = require('merge-descriptors');
 var isUrl = require('is-url');
 
-module.exports = function (app, defaultOptions) {
+module.exports = function forwardRequest(app, defaultOptions) {
   defaultOptions = defaultOptions || {};
 
   app.context.forward = function (url, options) {
     assert('string' === typeof url, 'first parameter must be a url string.');
 
     options = options || {};
+    options = merge(options, defaultOptions);
+
     if (isUrl(url)) {
       options.url = options.url || url;
     } else {
@@ -39,14 +41,24 @@ module.exports = function (app, defaultOptions) {
       }
     }
 
-    options = merge(defaultOptions, options, true);
-
     if (options.debug) {
       console.log('forward options -> %j', options);
     }
     
     this.respond = false;
     request(options).pipe(this.res);
+  };
+
+  module.exports.all = function all () {
+    assert(defaultOptions.baseUrl, 'use `all()` must set `baseUrl` in options');
+
+    return function* (next) {
+      yield* next;
+
+      if (this.status === 404) {
+        this.forward(this.originalUrl);
+      }
+    };
   };
 
   return app;
