@@ -74,6 +74,22 @@ describe('test localhost', function () {
         done();
       });
   });
+
+  it('should return 404', function (done) {
+    var app = koa();
+    forward(app);
+    app.use(route.get('/', function* () {
+      this.forward('/auth');
+    }));
+    app.use(route.get('/test', function* () {
+      this.throw(401, 'test');
+    }));
+
+    request(app.callback())
+      .get('/')
+      .expect(404)
+      .end(done);
+  });
 });
 
 describe('test remote url', function () {
