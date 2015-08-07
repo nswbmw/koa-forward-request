@@ -45,8 +45,19 @@ module.exports = function forwardRequest(app, defaultOptions) {
       console.log('forward options -> %j', options);
     }
     
+    var self = this;
     this.respond = false;
-    request(options).pipe(this.res);
+    request(options)
+    .on('error', function (err) {
+      if (err.code === 'ENOTFOUND') {
+        self.res.statusCode = 404;
+        self.res.end();
+      } else {
+        console.error(err);
+        throw err;
+      }
+    })
+    .pipe(this.res);
   };
 
   module.exports.all = function all () {

@@ -213,4 +213,17 @@ describe('test remote url', function () {
         done();
       });
   });
+
+  it('should return 404', function (done) {
+    var app = koa();
+    forward(app, {
+      baseUrl: 'http://non-existent-url.com'
+    });
+    app.use(forward.all());
+
+    request(app.callback())
+      .get('/')
+      .expect(404)
+      .end(done);
+  });
 });
