@@ -24,6 +24,9 @@ module.exports = function forwardRequest(app, defaultOptions) {
       options.baseUrl = options.baseUrl || this.protocol + '://' + this.host;
     }
     options.method = options.method || this.method;
+    if (this.header && this.header.host) {
+      delete this.header.host;
+    }
     options.headers = options.headers || this.header;
     options.qs = options.qs || this.query;
 

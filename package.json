@@ -1,6 +1,6 @@
 {
   "name": "koa-forward-request",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Forward request for koa",
   "main": "index.js",
   "scripts": {
