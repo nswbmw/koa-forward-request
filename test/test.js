@@ -1,12 +1,9 @@
 'use strict';
 
-var fs = require('fs');
-
 var koa = require('koa');
-var bodyparser = require('koa-bodyparser');
+var formidable = require('koa-formidable');
 var request = require('supertest');
 var route = require('koa-route');
-var formidable = require('formidable');
 var forward = require('../');
 
 describe('test localhost', function () {
@@ -37,7 +34,7 @@ describe('test localhost', function () {
     forward(app, {
       debug: true
     });
-    app.use(bodyparser());
+    app.use(formidable());
     app.use(route.post('/', function* () {
       this.forward('/test');
     }));
@@ -165,7 +162,7 @@ describe('test remote url', function () {
 
   it('should no forward and return body', function (done) {
     var app = koa();
-    app.use(bodyparser());
+    app.use(formidable());
 
     forward(app, {
       baseUrl: 'http://expressjs.com',
@@ -193,7 +190,7 @@ describe('test remote url', function () {
 
   it('should no forward', function (done) {
     var app = koa();
-    app.use(bodyparser());
+    app.use(formidable());
 
     forward(app, {
       baseUrl: 'http://expressjs.com',
@@ -235,25 +232,16 @@ describe('test remote url', function () {
   it('should return 404', function (done) {
     var app1 = koa();
     forward(app1, {
-      baseUrl: 'http://localhost:3001'
+      baseUrl: 'http://localhost:3001',
+      debug: true
     });
+    app1.use(formidable());
     app1.use(forward.all());
 
-    var filepath = '';
     var app2 = koa();
+    app2.use(formidable());
     app2.use(function *() {
-      var form = new formidable.IncomingForm();
-      form.uploadDir = __dirname;
-      form.parse(this.req, function (err, fields, files) {
-        if (err) throw err;
-        if (!fields.name || fields.name !== 'nswbmw') {
-          throw new Error('name should be nswbmw');
-        }
-        if (!files.avatar || files.avatar.name !== 'avatar.png') {
-          throw new Error('filename should be avatar.png');
-        }
-        filepath = files.avatar.path;
-      });
+      this.body = this.request.body.name + '/' + this.request.files.avatar.name;
     });
     app2.listen(3001);
 
@@ -261,16 +249,13 @@ describe('test remote url', function () {
       .post('/upload')
       .field('name', 'nswbmw')
       .attach('avatar', __dirname + '/avatar.png')
-      .expect(404)
-      .end(function (err) {
+      .expect(200)
+      .end(function (err, res) {
         if (err) return done(err);
-        setTimeout(function() {
-          if (!fs.existsSync(filepath)) {
-            return done(filepath + ' not exist!');
-          }
-          fs.unlinkSync(filepath);
-          done();
-        }, 500);
+        if (res.text !== 'nswbmw/avatar.png') {
+          return done('res.text should be `nswbmw/avatar.png`');
+        }
+        done();
       });
   });
 });

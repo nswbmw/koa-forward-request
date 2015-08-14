@@ -6,7 +6,6 @@ var fs = require('fs');
 var request = require('request');
 var merge = require('merge-descriptors');
 var isUrl = require('is-url');
-var formidable = require('formidable');
 
 module.exports = function forwardRequest(app, defaultOptions) {
   defaultOptions = defaultOptions || {};
@@ -36,7 +35,25 @@ module.exports = function forwardRequest(app, defaultOptions) {
       options.json = true;
       break;
     case 'multipart/form-data':
-      options.formData = options.formData;
+      var files = this.request.files || {};
+      var body = this.request.body || {};
+      if (!options.formData) {
+        delete options.headers['content-length'];
+        options.formData = {};
+
+        Object.keys(files).forEach(function (filename) {
+          options.formData[filename] = {
+            value: fs.createReadStream(files[filename].path),
+            options: {
+              filename: files[filename].name,
+              contentType: files[filename].type
+            }
+          };
+        });
+        Object.keys(body).forEach(function (item) {
+          options.formData[item] = body[item];
+        });
+      }
       break;
     case 'urlencoded':
       options.form = options.form || this.request.body;
@@ -50,37 +67,21 @@ module.exports = function forwardRequest(app, defaultOptions) {
     var self = this;
     self.respond = false;
 
-    if (this.is('multipart/form-data') && !options.formData) {
-      genFormData(self.req, function (err, form) {
-        if (err) throw err;
-        options.formData = form;
-        delete options.headers['content-length'];
+    if (options.debug) {
+      console.log('forward options -> %j', options);
+    }
 
-        if (options.debug) {
-          console.log('forward options -> %j', options);
-        }
-        pipeRequest();
-      });
-    } else {
-      if (options.debug) {
-        console.log('forward options -> %j', options);
+    request(options)
+    .on('error', function (err) {
+      if (err.code === 'ENOTFOUND') {
+        self.res.statusCode = 404;
+        self.res.end();
+      } else {
+        console.error(err);
+        throw err;
       }
-      pipeRequest();
-    }
-
-    function pipeRequest() {
-      request(options)
-      .on('error', function (err) {
-        if (err.code === 'ENOTFOUND') {
-          self.res.statusCode = 404;
-          self.res.end();
-        } else {
-          console.error(err);
-          throw err;
-        }
-      })
-      .pipe(self.res);
-    }
+    })
+    .pipe(self.res);
   };
 
   module.exports.all = function all () {
@@ -97,24 +98,3 @@ module.exports = function forwardRequest(app, defaultOptions) {
 
   return app;
 };
-
-function genFormData(req, cb) {
-  var form = new formidable.IncomingForm();
-  form.parse(req, function (err, fields, files) {
-    if (err) return cb(err);
-    try {
-      Object.keys(files).forEach(function (filename) {
-        fields[filename] = {
-          value: fs.createReadStream(files[filename].path),
-          options: {
-            filename: files[filename].name,
-            contentType: files[filename].type
-          }
-        };
-      });
-    } catch (e) {
-      console.warn(e);
-    }
-    cb(null, fields);
-  });
-}
