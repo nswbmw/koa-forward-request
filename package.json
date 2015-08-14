@@ -1,10 +1,10 @@
 {
   "name": "koa-forward-request",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Forward request for koa",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --harmony test --timeout=10000"
+    "test": "mocha --harmony test/test --timeout=10000"
   },
   "author": "nswbmw",
   "license": "MIT",
@@ -26,6 +26,7 @@
     "supertest": "^1.0.1"
   },
   "dependencies": {
+    "formidable": "^1.0.17",
     "is-url": "^1.2.1",
     "merge-descriptors": "^1.0.0",
     "request": "^2.59.0"

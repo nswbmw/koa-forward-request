@@ -1,10 +1,13 @@
 'use strict';
 
+var fs = require('fs');
+
 var koa = require('koa');
 var bodyparser = require('koa-bodyparser');
 var request = require('supertest');
 var route = require('koa-route');
-var forward = require('./');
+var formidable = require('formidable');
+var forward = require('../');
 
 describe('test localhost', function () {
   it('should return 200', function (done) {
@@ -31,7 +34,9 @@ describe('test localhost', function () {
 
   it('should return body', function (done) {
     var app = koa();
-    forward(app);
+    forward(app, {
+      debug: true
+    });
     app.use(bodyparser());
     app.use(route.post('/', function* () {
       this.forward('/test');
@@ -225,5 +230,47 @@ describe('test remote url', function () {
       .get('/')
       .expect(404)
       .end(done);
+  });
+
+  it('should return 404', function (done) {
+    var app1 = koa();
+    forward(app1, {
+      baseUrl: 'http://localhost:3001'
+    });
+    app1.use(forward.all());
+
+    var filepath = '';
+    var app2 = koa();
+    app2.use(function *() {
+      var form = new formidable.IncomingForm();
+      form.uploadDir = __dirname;
+      form.parse(this.req, function (err, fields, files) {
+        if (err) throw err;
+        if (!fields.name || fields.name !== 'nswbmw') {
+          throw new Error('name should be nswbmw');
+        }
+        if (!files.avatar || files.avatar.name !== 'avatar.png') {
+          throw new Error('filename should be avatar.png');
+        }
+        filepath = files.avatar.path;
+      });
+    });
+    app2.listen(3001);
+
+    request(app1.callback())
+      .post('/upload')
+      .field('name', 'nswbmw')
+      .attach('avatar', __dirname + '/avatar.png')
+      .expect(404)
+      .end(function (err) {
+        if (err) return done(err);
+        setTimeout(function() {
+          if (!fs.existsSync(filepath)) {
+            return done(filepath + ' not exist!');
+          }
+          fs.unlinkSync(filepath);
+          done();
+        }, 500);
+      });
   });
 });
