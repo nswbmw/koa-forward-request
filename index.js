@@ -33,8 +33,9 @@ module.exports = function forwardRequest(app, defaultOptions) {
       options.json = true;
       break;
     case 'multipart/form-data':
-      var files = this.request.files || {};
-      var body = this.request.body || {};
+      var body = this.request.body;
+      var files = body.files || {};
+      var fields = body.fields || {};
       if (!options.formData) {
         delete options.headers['content-length'];
         options.formData = {};
@@ -48,8 +49,8 @@ module.exports = function forwardRequest(app, defaultOptions) {
             }
           };
         });
-        Object.keys(body).forEach(function (item) {
-          options.formData[item] = body[item];
+        Object.keys(fields).forEach(function (item) {
+          options.formData[item] = fields[item];
         });
       }
       break;

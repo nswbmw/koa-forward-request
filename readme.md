@@ -45,7 +45,7 @@ or
 
 var app = require('koa')();
 var route = require('koa-route');
-var formidable = require('koa-formidable');
+var koaBody = require('koa-body');
 var logger = require('koa-logger');
 
 var forward = require('./');
@@ -55,7 +55,7 @@ forward(app, {
 });
 
 app.use(logger());
-app.use(formidable());
+app.use(koaBody());
 
 app.use(route.post('/', function* () {
   this.forward('/test');
@@ -75,7 +75,7 @@ or
 
 var app = require('koa')();
 var route = require('koa-route');
-var formidable = require('koa-formidable');
+var koaBody = require('koa-body');
 
 var forward = require('./');
 
@@ -83,13 +83,13 @@ forward(app, {
   baseUrl: 'http://api.example.com'
 });
 
-app.use(formidable());
+app.use(koaBody());
 app.use(forward.all());// forward all request to 'http://api.example.com'
 
 app.listen(3000);
 ```
 
-**NB:** If you set content-type to `multipart/form-data` for uploading file, please use `koa-formidable`.
+**NB:** If you set content-type to `multipart/form-data` for uploading file, please use `koa-body` and enable `multipart` option.
 
 ### Options
 

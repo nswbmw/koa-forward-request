@@ -1,7 +1,7 @@
 'use strict';
 
 var koa = require('koa');
-var formidable = require('koa-formidable');
+var koaBody = require('koa-body');
 var request = require('supertest');
 var route = require('koa-route');
 var forward = require('../');
@@ -34,7 +34,7 @@ describe('test localhost', function () {
     forward(app, {
       debug: true
     });
-    app.use(formidable());
+    app.use(koaBody());
     app.use(route.post('/', function* () {
       this.forward('/test');
     }));
@@ -162,7 +162,7 @@ describe('test remote url', function () {
 
   it('should no forward and return body', function (done) {
     var app = koa();
-    app.use(formidable());
+    app.use(koaBody());
 
     forward(app, {
       baseUrl: 'http://expressjs.com',
@@ -190,7 +190,7 @@ describe('test remote url', function () {
 
   it('should no forward', function (done) {
     var app = koa();
-    app.use(formidable());
+    app.use(koaBody());
 
     forward(app, {
       baseUrl: 'http://expressjs.com',
@@ -229,19 +229,24 @@ describe('test remote url', function () {
       .end(done);
   });
 
-  it('should return 404', function (done) {
+  it('should upload file success', function (done) {
     var app1 = koa();
     forward(app1, {
       baseUrl: 'http://localhost:3001',
       debug: true
     });
-    app1.use(formidable());
+    app1.use(koaBody({
+      multipart: true
+    }));
     app1.use(forward.all());
 
     var app2 = koa();
-    app2.use(formidable());
+    app2.use(koaBody({
+      multipart: true
+    }));
     app2.use(function *() {
-      this.body = this.request.body.name + '/' + this.request.files.avatar.name;
+      var body = this.request.body;
+      this.body = body.fields.name + '/' + body.files.avatar.name;
     });
     app2.listen(3001);
 

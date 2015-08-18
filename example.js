@@ -2,7 +2,7 @@
 
 var app = require('koa')();
 var route = require('koa-route');
-var bodyparser = require('koa-bodyparser');
+var koaBody = require('koa-body');
 var logger = require('koa-logger');
 
 var forward = require('./');
@@ -12,7 +12,9 @@ forward(app, {
 });
 
 app.use(logger());
-app.use(bodyparser());
+app.use(koaBody({
+  multipart: true
+}));
 
 app.use(route.post('/', function* () {
   console.log(this.method);
