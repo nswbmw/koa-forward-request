@@ -29,6 +29,7 @@ module.exports = function forwardRequest(app, defaultOptions) {
 
     switch (this.is('json', 'multipart/form-data', 'urlencoded')) {
     case 'json':
+      delete options.headers['content-length'];
       options.body = options.body || this.request.body;
       options.json = true;
       break;
