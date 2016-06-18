@@ -14,7 +14,7 @@ module.exports = function forwardRequest(app, defaultOptions) {
     assert('string' === typeof url, 'first parameter must be a url string.');
 
     options = options || {};
-    options = merge(options, defaultOptions);
+    options = merge(options, defaultOptions, false);
 
     if (isUrl(url)) {
       options.url = options.url || url;

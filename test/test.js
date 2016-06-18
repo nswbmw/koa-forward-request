@@ -138,7 +138,7 @@ describe('test remote url', function () {
       });
   });
 
-  it('should forward to http://expressjs.com//guide/routing.html', function (done) {
+  it('should forward to http://expressjs.com/en/guide/routing.html', function (done) {
     var app = koa();
     forward(app, {
       baseUrl: 'http://expressjs.com',
@@ -148,7 +148,7 @@ describe('test remote url', function () {
     app.use(forward.all());
 
     request(app.callback())
-      .get('/guide/routing.html')
+      .get('/en/guide/routing.html')
       .expect(200)
       .end(function (err, res) {
         if (err) return done(err);

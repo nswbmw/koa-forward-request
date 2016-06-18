@@ -1,6 +1,6 @@
 {
   "name": "koa-forward-request",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Forward request for koa",
   "main": "index.js",
   "scripts": {
@@ -18,16 +18,16 @@
     "redirect"
   ],
   "devDependencies": {
-    "koa": "^0.21.0",
-    "koa-body": "^1.2.1",
+    "koa": "^1.2.0",
+    "koa-body": "^1.4.0",
     "koa-logger": "^1.3.0",
     "koa-route": "^2.4.2",
-    "mocha": "^2.2.5",
-    "supertest": "^1.0.1"
+    "mocha": "^2.5.3",
+    "supertest": "^1.2.0"
   },
   "dependencies": {
     "is-url": "^1.2.1",
     "merge-descriptors": "^1.0.0",
-    "request": "^2.59.0"
+    "request": "^2.72.0"
   }
 }
