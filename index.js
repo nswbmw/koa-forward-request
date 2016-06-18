@@ -84,14 +84,14 @@ module.exports = function forwardRequest(app, defaultOptions) {
     .pipe(self.res);
   };
 
-  module.exports.all = function all () {
+  module.exports.all = function all (options) {
     assert(defaultOptions.baseUrl, 'use `all()` must set `baseUrl` in options');
 
     return function* (next) {
       yield* next;
 
       if (this.status === 404) {
-        this.forward(this.originalUrl);
+        this.forward(this.originalUrl, options);
       }
     };
   };
