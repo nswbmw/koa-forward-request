@@ -73,7 +73,7 @@ module.exports = function forwardRequest(app, defaultOptions) {
 
     request(options)
     .on('error', function (err) {
-      if (err.code === 'ENOTFOUND') {
+      if (['ENOTFOUND', 'ECONNREFUSED'].indexOf(err.code) !== -1) {
         self.res.statusCode = 404;
         self.res.end();
       } else {
