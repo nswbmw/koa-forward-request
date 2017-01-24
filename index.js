@@ -42,13 +42,12 @@ module.exports = function forwardRequest(app, defaultOptions) {
         options.formData = {};
 
         Object.keys(files).forEach(function (filename) {
-          options.formData[filename] = {
-            value: fs.createReadStream(files[filename].path),
-            options: {
-              filename: files[filename].name,
-              contentType: files[filename].type
-            }
-          };
+          let file = files[filename];
+          if (Array.isArray(file)) {
+            options.formData[filename] = file.map(genFormDataFromFile);
+          } else {
+            options.formData[filename] = genFormDataFromFile(file);
+          }
         });
         Object.keys(fields).forEach(function (item) {
           options.formData[item] = fields[item];
@@ -63,7 +62,6 @@ module.exports = function forwardRequest(app, defaultOptions) {
         options.body = options.body || this.request.body;
       }
     }
-    
     var self = this;
     self.respond = false;
 
@@ -98,3 +96,13 @@ module.exports = function forwardRequest(app, defaultOptions) {
 
   return app;
 };
+
+function genFormDataFromFile(file) {
+  return {
+    value: fs.createReadStream(file.path),
+    options: {
+      filename: file.name,
+      contentType: file.type
+    }
+  };
+}
